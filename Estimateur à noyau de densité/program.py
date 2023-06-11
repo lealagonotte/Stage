@@ -89,4 +89,5 @@ plot_multivariate_distribution(np.array([0, 0]), np.array([[1, 0.5], [0.5, 1]]))
 
  #dans ss.gaussian_kde h est calcule automatiquement
  #quelle influence a h sur l'estimateur?
+ 
 
