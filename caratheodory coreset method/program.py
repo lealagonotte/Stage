@@ -6,14 +6,13 @@ d=2
 T=15 #choisir T en fonction des résultats qu'on a après
 n=100
 D=2*(1+4*T/math.pi)**d
-vect_init=[] #a remplir
-n=len(vect_init) #longueur initiale
+
 
 
 def generer_vecteurs(T, vectors):
     """Crée et renvoie l'ensemble des points qu'on considère (de la forme (e^(i(X_j,w)), w in A)
     vectors est l'ensemble des X_j"""
-    vecteurs = []
+    vecteurs = np.random.normal()
     #Parcours l'ensemble des coordonnées possibles pour vérifier la condition sur la norme
     for z in range(-int(T*2/3), int(T*2/3)):
         for y in range(-int(T*2/3), int(T*2/3)): 
@@ -25,6 +24,12 @@ def generer_vecteurs(T, vectors):
     prodsca = [[math.exp(1j * np.dot(v1, v2)) for v1 in vectors] for v2 in vecteurs]
     liste = [[(x.real, x.imag) for x in prodsca[i]] for i in range (len(prodsca))]
     return  liste
+
+
+vect_init=[np.random.normal(loc=0, scale=1, size=1000)]
+vectors=generer_vecteurs(T, vect_init)
+n=len(vectors) #longueur initiale
+
 
 def create_matrix(*vectors):
     """
@@ -93,11 +98,12 @@ def iteration(*vectors, iter, lambfin) :
     v=vecteur_propre(M) 
 
     #Donne lambda_j et la composante qu'on annule
-    (lambd,i)=find_alpha(v) 
+    (lambd,j)=find_alpha(v) 
 
     # Met à jour le tableau de vecteur (pour les histoires de moyenne, on doit multiplier les nvx vecteurs par n-iter)
-    vect=(n-iter)*[lamb[i]*vectors[i] for i in range(len(vectors))]
-    lambfin=[lambd[i]*lambdfin[i] for i in range(len(lambd))]
+    vect=(n-iter)*[lamb[i]*vectors[i] for i in range(len(vectors))].pop(j)
+    # Enlève la composante j car c'est celle qu'on a annulé
+    lambfin=(n-iter)*[lambd[i]*lambdfin[i] for i in range(len(lambd))]
     #Met à jour le tableau des lambdfin car on voit qu'en itérant les poids finaux seront le produit des lambda_i à chaque itération i
     while nb>D+1 : #tant que le nb est supérieur à D+1 on peut encore en supprimer par le théorème de Carathéodory  donc on itére      
 
