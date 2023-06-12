@@ -1,5 +1,9 @@
 import math
 import numpy as np
+import cmath
+import scipy.stats as ss
+
+
 
 #Paramètres :
 d=2
@@ -8,11 +12,10 @@ n=100
 D=2*(1+4*T/math.pi)**d
 
 
-
 def generer_vecteurs(T, vectors):
     """Crée et renvoie l'ensemble des points qu'on considère (de la forme (e^(i(X_j,w)), w in A)
-    vectors est l'ensemble des X_j"""
-    vecteurs = np.random.normal()
+    vectors est l'ensemble des X_j donc une liste de liste"""
+    vecteurs = []
     #Parcours l'ensemble des coordonnées possibles pour vérifier la condition sur la norme
     for z in range(-int(T*2/3), int(T*2/3)):
         for y in range(-int(T*2/3), int(T*2/3)): 
@@ -21,14 +24,21 @@ def generer_vecteurs(T, vectors):
             if np.linalg.norm(vecteur, np.inf) < T:
                 vecteurs.append(vecteur)
 # Crée les exponentielles complexes
-    prodsca = [[math.exp(1j * np.dot(v1, v2)) for v1 in vectors] for v2 in vecteurs]
-    liste = [[(x.real, x.imag) for x in prodsca[i]] for i in range (len(prodsca))]
+    prodsca = [[cmath.exp(1j * np.dot(v1, v2)) for v1 in vectors] for v2 in vecteurs]
+
+    liste =[]
+    for i in range(len(prodsca)) :
+        ss_liste=[]
+        for x in prodsca[i] :
+            ss_liste.append(x.real)
+            ss_liste.append(x.imag)
+        liste.append(ss_liste)
     return  liste
 
 
-vect_init=[np.random.normal(loc=0, scale=1, size=1000)]
+"""vect_init=np.random.multivariate_normal(np.array([0, 0]), np.array([[1, 0.5], [0.5, 1]]), 100)
 vectors=generer_vecteurs(T, vect_init)
-n=len(vectors) #longueur initiale
+n=len(vectors) #longueur initiale"""
 
 
 def create_matrix(*vectors):
@@ -91,7 +101,7 @@ def iteration(*vectors, iter, lambfin) :
     -iter : indique à quelle itération on est 
     -lambdfin -> fait le produit des lambda i au fur et à mesure, ce sont ces coefficients que l'on cherche à avoir"""
     M=create_matrix(*vectors) #on crée la matrice
-    nb=len(*vectors) #nb de vecteurs qu'il nous reste 
+    nb=len(vectors) #nb de vecteurs qu'il nous reste 
     iter+=1 # pour savoir combien d'itération on a déjà fait
 
     #Trouve le vecteur du noyau non nul de M
@@ -101,9 +111,9 @@ def iteration(*vectors, iter, lambfin) :
     (lambd,j)=find_alpha(v) 
 
     # Met à jour le tableau de vecteur (pour les histoires de moyenne, on doit multiplier les nvx vecteurs par n-iter)
-    vect=(n-iter)*[lamb[i]*vectors[i] for i in range(len(vectors))].pop(j)
-    # Enlève la composante j car c'est celle qu'on a annulé
-    lambfin=(n-iter)*[lambd[i]*lambdfin[i] for i in range(len(lambd))]
+    vect=[(n-iter)*lambd[i]*vectors[i] for i in range(len(vectors))].pop(j)
+    # Enlève la composante j car c'est celle qu'on a annulé, on réduit ainsi le nb de vecteurs à l'ztapes suivante
+    lambfin=[(n-iter)*lambd[i]*lambdfin[i] for i in range(len(lambd))]
     #Met à jour le tableau des lambdfin car on voit qu'en itérant les poids finaux seront le produit des lambda_i à chaque itération i
     while nb>D+1 : #tant que le nb est supérieur à D+1 on peut encore en supprimer par le théorème de Carathéodory  donc on itére      
 
