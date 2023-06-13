@@ -4,10 +4,8 @@ import cmath
 import scipy.stats as ss
 
 
-
-#Paramètres :
 d=2
-T=15 #choisir T en fonction des résultats qu'on a après
+T=1 #choisir T en fonction des résultats qu'on a après
 n=100
 D=2*(1+4*T/math.pi)**d
 
@@ -24,7 +22,7 @@ def generer_vecteurs(T, vectors):
             if np.linalg.norm(vecteur, np.inf) < T:
                 vecteurs.append(vecteur)
 # Crée les exponentielles complexes
-    prodsca = [[cmath.exp(1j * np.dot(v1, v2)) for v1 in vectors] for v2 in vecteurs]
+    prodsca = [[cmath.exp(1j * np.dot(v1, v2)) for v1 in vecteurs] for v2 in vectors]
 
     liste =[]
     for i in range(len(prodsca)) :
@@ -78,46 +76,66 @@ def vecteur_propre(matrix):
 
 
 def find_alpha( vector):
-    """Trouve et renvoie un vecteur alpha qui annule une des composantes du vecteur appelé lambda dans l'article
+    """Trouve et renvoie un vecteur alpha qui annule une des composantes du vecteur appelé lambda dans l'article*
+    il faut trouver alpha de telle sorte que les autres coefficients ne soient pas négatifs donc annuler le minimum en fait doit marche
     Paramètres : 
     
-    -vector : vector est un vecteur du noyau calculé grâce à la fonction précédente
-"""
-    i = 0
-    #il se peut que des composantes soient nulles, on annule donc la première composante non nulle
-    while i < len(vector) and vector[i] == 0:
-        i += 1
-    print(i)
-    v1=(1 / len(vector) * np.ones(len(vector) ))
-    v2=(1 / (len(vector) * vector[i])) * vector
+    -vector : vector est un vecteur du noyau calculé grâce à la fonction précédente"""   
+   
+    old=(-1/(len(vector)* vector[0]))
+    i=0
+    j=0
+    while i<len(vector) :
+        if vector[i]!=0 :
+            a = (-1/(len(vector) * vector[i]) )
+        
+            if abs(a)<abs(old)  :
+                old=a
+                j=i 
+            i+=1
+    v1=(1 / (len(vector) * np.ones(len(vector) )))
+    v2=old * vector
 
-    res = v1 - v2
-    return res,i #renvoie le lambda_i et l'indice de la composante qu'on a annulé
+    res = v1 + v2
+    return res,j #renvoie le lambda_i et l'indice de la composante qu'on a annulé
 
 ##Itère la procédure tant que il reste plus de D+1 termes dans la somme
-def iteration(*vectors, iter, lambfin) :
+def iteration(*vectors, ite, lambfin, indice) :
     """ Itère les deux étapes jusqu'à ce qu'on ait plus que D+1 vecteurs
     Paramètrees :
     -iter : indique à quelle itération on est 
     -lambdfin -> fait le produit des lambda i au fur et à mesure, ce sont ces coefficients que l'on cherche à avoir"""
     M=create_matrix(*vectors) #on crée la matrice
     nb=len(vectors) #nb de vecteurs qu'il nous reste 
-    iter+=1 # pour savoir combien d'itération on a déjà fait
-
+    ite+=1 # pour savoir combien d'itération on a déjà fait
+    #indique les indices ou la comopsante est non nulle (0 si est nulle 1 sinon)
     #Trouve le vecteur du noyau non nul de M
     v=vecteur_propre(M) 
 
     #Donne lambda_j et la composante qu'on annule
     (lambd,j)=find_alpha(v) 
-
+    indice[j]=0
     # Met à jour le tableau de vecteur (pour les histoires de moyenne, on doit multiplier les nvx vecteurs par n-iter)
-    vect=[(n-iter)*lambd[i]*vectors[i] for i in range(len(vectors))].pop(j)
+    
+    vect = []
+    for i in range(len(vectors)):
+        temp = np.multiply((n - ite) * lambd[i] ,vectors[i])
+        if i != j:  # Exclude the element at index j
+            vect.append(temp)
     # Enlève la composante j car c'est celle qu'on a annulé, on réduit ainsi le nb de vecteurs à l'ztapes suivante
-    lambfin=[(n-iter)*lambd[i]*lambdfin[i] for i in range(len(lambd))]
+    print(indice)
+    rg=0
+    for k in range(len(lambfin)) :
+        if indice[k]== 1 :
+            lambfin[k]=(n-ite)*lambd[rg]*lambfin[k]
+            rg+=1
+    lambfin[j]=0
+    print(ite)
+    #print(lambd)
     #Met à jour le tableau des lambdfin car on voit qu'en itérant les poids finaux seront le produit des lambda_i à chaque itération i
-    while nb>D+1 : #tant que le nb est supérieur à D+1 on peut encore en supprimer par le théorème de Carathéodory  donc on itére      
+    if nb>D+1 : #tant que le nb est supérieur à D+1 on peut encore en supprimer par le théorème de Carathéodory  donc on itére      
 
-        iteration(*vect)
-    return lambdfin
+        iteration(*vect, ite=ite, lambfin=lambfin, indice=indice)
+    return lambfin
 
 
