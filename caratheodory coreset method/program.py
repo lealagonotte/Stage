@@ -5,10 +5,10 @@ import scipy.stats as ss
 
 
 d=2
-T=1 #choisir T en fonction des résultats qu'on a après
+T=2 #choisir T en fonction des résultats qu'on a après
 n=100
 D=2*(1+4*T/math.pi)**d
-
+print(D)
 
 def generer_vecteurs(T, vectors):
     """Crée et renvoie l'ensemble des points qu'on considère (de la forme (e^(i(X_j,w)), w in A)
@@ -21,9 +21,10 @@ def generer_vecteurs(T, vectors):
             #Vérifie la condition sur la norme infinie et la fréquence T
             if np.linalg.norm(vecteur, np.inf) < T:
                 vecteurs.append(vecteur)
+    print(vecteurs)
 # Crée les exponentielles complexes
     prodsca = [[cmath.exp(1j * np.dot(v1, v2)) for v1 in vecteurs] for v2 in vectors]
-
+    #print(prodsca)
     liste =[]
     for i in range(len(prodsca)) :
         ss_liste=[]
@@ -104,11 +105,12 @@ def iteration(*vectors, ite, lambfin, indice) :
     """ Itère les deux étapes jusqu'à ce qu'on ait plus que D+1 vecteurs
     Paramètrees :
     -iter : indique à quelle itération on est 
-    -lambdfin -> fait le produit des lambda i au fur et à mesure, ce sont ces coefficients que l'on cherche à avoir"""
+    -lambdfin -> fait le produit des lambda i au fur et à mesure, ce sont ces coefficients que l'on cherche à avoir
+    -indice : tableau de 0 ou de 1. Si indice[j]=0 alors on a annulé le coeff devant la composante j sinon elle est encore là"""
     M=create_matrix(*vectors) #on crée la matrice
     nb=len(vectors) #nb de vecteurs qu'il nous reste 
     ite+=1 # pour savoir combien d'itération on a déjà fait
-    #indique les indices ou la comopsante est non nulle (0 si est nulle 1 sinon)
+    print("on doit faire au plus", n-D-1, "itérations")
     #Trouve le vecteur du noyau non nul de M
     v=vecteur_propre(M) 
 
