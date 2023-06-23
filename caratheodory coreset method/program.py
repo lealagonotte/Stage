@@ -10,20 +10,12 @@ n=100
 D=2*(1+4*T/math.pi)**d
 print(D)
 
-def generer_vecteurs(T, vectors):
+def generer_vecteurs(T, vectors, A):
     """Crée et renvoie l'ensemble des points qu'on considère (de la forme (e^(i(X_j,w)), w in A)
     vectors est l'ensemble des X_j donc une liste de liste"""
-    vecteurs = []
-    #Parcours l'ensemble des coordonnées possibles pour vérifier la condition sur la norme
-    for z in range(-int(T*2/3), int(T*2/3)):
-        for y in range(-int(T*2/3), int(T*2/3)): 
-            vecteur = (np.pi / 2) * np.array([z, y])
-            #Vérifie la condition sur la norme infinie et la fréquence T
-            if np.linalg.norm(vecteur, np.inf) < T:
-                vecteurs.append(vecteur)
-    print(vecteurs)
+   
 # Crée les exponentielles complexes
-    prodsca = [[cmath.exp(1j * np.dot(v1, v2)) for v1 in vecteurs] for v2 in vectors]
+    prodsca = [[cmath.exp(1j * np.dot(v1, v2)) for v1 in A] for v2 in vectors]
     #print(prodsca)
     liste =[]
     for i in range(len(prodsca)) :
@@ -116,7 +108,7 @@ def iteration(*vectors, ite, lambfin, indice) :
 
     #Donne lambda_j et la composante qu'on annule
     (lambd,j)=find_alpha(v) 
-    indice[j]=0
+    
     # Met à jour le tableau de vecteur (pour les histoires de moyenne, on doit multiplier les nvx vecteurs par n-iter)
     
     vect = []
@@ -124,14 +116,19 @@ def iteration(*vectors, ite, lambfin, indice) :
         temp = np.multiply((n - ite) * lambd[i] ,vectors[i])
         if i != j:  # Exclude the element at index j
             vect.append(temp)
-    # Enlève la composante j car c'est celle qu'on a annulé, on réduit ainsi le nb de vecteurs à l'ztapes suivante
+    # Enlève la composante j car c'est celle qu'on a annulé, on réduit ainsi le nb de vecteurs à l'étape suivante
     print(indice)
+    
     rg=0
-    for k in range(len(lambfin)) :
-        if indice[k]== 1 :
-            lambfin[k]=(n-ite)*lambd[rg]*lambfin[k]
-            rg+=1
+    for k in range(len(lambd)) :
+        if indice[rg]==0 :
+            while indice[rg]== 0  :
+                rg+=1
+        lambfin[rg]=(n-ite)*lambd[k]*lambfin[rg]
+        print(rg)
+        rg+=1
     lambfin[j]=0
+    indice[j]=0
     print(ite)
     #print(lambd)
     #Met à jour le tableau des lambdfin car on voit qu'en itérant les poids finaux seront le produit des lambda_i à chaque itération i
