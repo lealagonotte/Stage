@@ -5,22 +5,22 @@ import math
 d=2
 T=2 #choisir T en fonction des résultats qu'on a après
 n=100
-D=2*(1+4*T/math.pi)**d
-print(D)
+#D=2*(1+4*T/math.pi)**d
+#print(D)
 
 
 #construit l'ensemble A
 A= []
     #Parcours l'ensemble des coordonnées possibles pour vérifier la condition sur la norme
-for z in range(-int(T*2/3), int(T*2/3)):
-    for y in range(-int(T*2/3), int(T*2/3)): 
+for z in range(-int(T*2/3), int(T*2/3)+1):
+    for y in range(-int(T*2/3), int(T*2/3)+1): 
         vecteur = (np.pi / 2) * np.array([z, y])
             #Vérifie la condition sur la norme infinie et la fréquence T
-        if np.linalg.norm(vecteur, np.inf) < T:
+        if np.linalg.norm(vecteur, np.inf) <= T:
             A.append(vecteur)
-print(A)
+#print(A)
 
-
+D=len(A)
 
 
 # on part d'une loi multinomiale
@@ -59,6 +59,7 @@ def test(vectors, liste_coeff) :
 
 print(test(vectors, res))
 
-def reconstruction_noyau() :
-    """va reconstruire les deux noyaux et les tracer pour les comparer"""
-    
+def reconstruction_noyau(noyau, Xj, A, coeff,x ) :
+    """Reconstruit les deux estimateurs et les trace pour les comparer"""
+    X=np.linspace(-n,n,4*n)
+    Y=
