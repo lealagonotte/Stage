@@ -7,7 +7,19 @@ import scipy.stats as ss
 d=2
 T=2 #choisir T en fonction des résultats qu'on a après
 n=100
-D=2*(1+4*T/math.pi)**d
+#D=int(2*(1+4*T/math.pi)**d)
+
+A= []
+    #Parcours l'ensemble des coordonnées possibles pour vérifier la condition sur la norme
+for z in range(-int(T*2/3), int(T*2/3)+1):
+    for y in range(-int(T*2/3), int(T*2/3)+1): 
+        vecteur = (np.pi / 2) * np.array([z, y])
+            #Vérifie la condition sur la norme infinie et la fréquence T
+        if np.linalg.norm(vecteur, np.inf) <= T:
+            A.append(vecteur)
+#print(A)
+
+D=len(A)
 print(D)
 
 def generer_vecteurs(T, vectors, A):
@@ -16,6 +28,7 @@ def generer_vecteurs(T, vectors, A):
    
 # Crée les exponentielles complexes
     prodsca = [[cmath.exp(1j * np.dot(v1, v2)) for v1 in A] for v2 in vectors]
+    print(len(prodsca))
     #print(prodsca)
     liste =[]
     for i in range(len(prodsca)) :
@@ -23,6 +36,7 @@ def generer_vecteurs(T, vectors, A):
         for x in prodsca[i] :
             ss_liste.append(x.real)
             ss_liste.append(x.imag)
+            
         liste.append(ss_liste)
     return  liste
 
@@ -113,7 +127,8 @@ def iteration(*vectors, ite, lambfin, indice) :
     
     vect = []
     for i in range(len(vectors)):
-        temp = np.multiply((n - ite) * lambd[i] ,vectors[i])
+        v = np.array(vectors[i], dtype=np.float64)
+        temp =  v*((n - ite) * lambd[i])
         if i != j:  # Exclude the element at index j
             vect.append(temp)
     # Enlève la composante j car c'est celle qu'on a annulé, on réduit ainsi le nb de vecteurs à l'étape suivante
@@ -125,7 +140,7 @@ def iteration(*vectors, ite, lambfin, indice) :
             while indice[rg]== 0  :
                 rg+=1
         lambfin[rg]=(n-ite)*lambd[k]*lambfin[rg]
-        print(rg)
+        #print(rg)
         rg+=1
     lambfin[j]=0
     indice[j]=0
