@@ -7,7 +7,7 @@ T=2 #choisir T en fonction des résultats qu'on a après
 n=100
 #D=2*(1+4*T/math.pi)**d
 #print(D)
-
+import cmath
 
 #construit l'ensemble A
 A= []
@@ -29,7 +29,7 @@ vect_init=np.random.multivariate_normal(np.array([0, 0]), np.array([[1, 0.5], [0
 #on construit les vj
 vectoors=generer_vecteurs(T, vect_init, A)
 
-print("M est de taille", len(create_matrix(*vectoors)[0]))
+
 
 
 
@@ -56,24 +56,56 @@ def test(vectors, liste_coeff) :
 print(sum(res))
 print(test(vectoors, res))
 
-"""def reconstruction_noyau(noyau, Xj, A, coeff,x ) :
-    #Reconstruit les deux estimateurs et les trace pour les comparer
-    x = np.linspace(min(Xj[0]), max(Xj[0]), 1000)
-    y=0
-    inter=noyau(x)
-    for w in A :
-        index = int(w / (x[1] - x[0])) #on trouve l'indice le plus proche
-        fft=inter[index]
-        somme=0
+
+
+
+
+
+def gaussian_kernel(x, sigma=1):
+    return np.exp(-np.linalg.norm(x) ** 2 / (2 * (sigma ** 2)))
+
+def reconstruction_noyau(noyau, Xj, A, coeff):
+    n = len(Xj)
+    d = len(Xj[0])
+    Xj = np.array(Xj)
+
+    x1 = np.linspace(min(Xj[:, 0]), max(Xj[:, 0]), 100)
+    x2=np.linspace(min(Xj[:, 1]), max(Xj[:, 1]), 100)
+    
+    X, Y = np.meshgrid(x1, x2)
+    pos = np.dstack((X, Y))
+    print(pos)
+    y = np.zeros_like(pos)
+    inter=np.array([])
+    for elmt in pos :
+        inter=np.append(inter, noyau(elmt))
+    
+
+    fft = np.fft.fft(inter)
+
+    for w in A:
+        index1 = int(w[0] / (x1[1] - x1[0]))
+        index2 = int(w[1] / (x2[1] - x2[0]))  # On trouve l'indice le plus proche
+        
+        pos_w=[index1, index2]
+        fft_w = fft[pos_w]
+        somme = 0
         for i in range(n):
-            
-        y += np.fft.fft()/(4**d)*
+            somme += coeff[i] * cmath.exp(1j * np.dot(w, Xj[i]))
+        
+        y += fft_w / (4 ** d) * somme * cmath.exp(-1j * np.dot(w, pos))
+
+    z = np.zeros_like(x)
+    for i in range(n):
+        z += 1 / n * noyau(Xj[i] - pos)
 
     # Affiche le graphique de la densité de probabilité
-    plt.plot(x, y)
+    plt.plot(X, Y, np.real(y))
+    plt.plot(X,Y, np.real(z))
     plt.xlabel('Valeur')
     plt.ylabel('Densité de probabilité')
     plt.title('Estimation de densité de probabilité')
-    plt.hist(data, density=True)
+
     plt.show()
-"""
+
+reconstruction_noyau(gaussian_kernel, vect_init,A, res )
