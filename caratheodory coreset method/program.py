@@ -19,8 +19,33 @@ for z in range(-int(T*2/3), int(T*2/3)+1):
             A.append(vecteur)
 #print(A)
 
-D=len(A)
+D=2*len(A)
 print(D)
+
+
+
+# Paramètres de la distribution exponentielle
+lambda_1 = 0.5  # Taux de décroissance pour la première dimension
+lambda_2 = 0.8  # Taux de décroissance pour la deuxième dimension
+
+# Taille de l'échantillon
+n = 100
+
+# Génération des données
+data = np.zeros((n, 2))  # Tableau pour stocker les données
+
+for i in range(n):
+    # Génération des valeurs pour chaque dimension
+    x1 = np.random.exponential(scale=1/lambda_1)
+    x2 = np.random.exponential(scale=1/lambda_2)
+    
+    data[i] = [x1, x2]  # Stockage des valeurs dans le tableau
+
+print(data)
+
+
+
+
 
 def generer_vecteurs(T, vectors, A):
     """Crée et renvoie l'ensemble des points qu'on considère (de la forme (e^(i(X_j,w)), w in A)
@@ -116,21 +141,21 @@ def iteration(*vectors, ite, lambfin, indice) :
     M=create_matrix(*vectors) #on crée la matrice
     nb=len(vectors) #nb de vecteurs qu'il nous reste 
     ite+=1 # pour savoir combien d'itération on a déjà fait
-    print("on doit faire au plus", n-D-1, "itérations")
+    
     #Trouve le vecteur du noyau non nul de M
     v=vecteur_propre(M) 
 
     #Donne lambda_j et la composante qu'on annule
     (lambd,j)=find_alpha(v) 
-    
+    print(sum(lambd))
     # Met à jour le tableau de vecteur (pour les histoires de moyenne, on doit multiplier les nvx vecteurs par n-iter)
     
     vect = []
     for i in range(len(vectors)):
         v = np.array(vectors[i], dtype=np.float64)
-        temp =  v*((n - ite) * lambd[i])
+        
         if i != j:  # Exclude the element at index j
-            vect.append(temp)
+            vect.append(v)
     # Enlève la composante j car c'est celle qu'on a annulé, on réduit ainsi le nb de vecteurs à l'étape suivante
     print(indice)
     
@@ -139,11 +164,13 @@ def iteration(*vectors, ite, lambfin, indice) :
         if indice[rg]==0 :
             while indice[rg]== 0  :
                 rg+=1
-        lambfin[rg]=(n-ite)*lambd[k]*lambfin[rg]
+        lambfin[rg]=lambd[k]
+        if j==k :
+            lambfin[rg]=0
+            indice[rg]=0
         #print(rg)
         rg+=1
-    lambfin[j]=0
-    indice[j]=0
+    print(sum(indice))
     print(ite)
     #print(lambd)
     #Met à jour le tableau des lambdfin car on voit qu'en itérant les poids finaux seront le produit des lambda_i à chaque itération i

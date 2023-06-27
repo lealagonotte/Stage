@@ -20,26 +20,26 @@ for z in range(-int(T*2/3), int(T*2/3)+1):
             A.append(vecteur)
 #print(A)
 
-D=len(A)
+D=2*len(A)
 
 
 # on part d'une loi multinomiale
 vect_init=np.random.multivariate_normal(np.array([0, 0]), np.array([[1, 0.5], [0.5, 1]]), 100)
 
 #on construit les vj
-vectors=generer_vecteurs(T, vect_init, A)
-n=len(vectors)
+vectoors=generer_vecteurs(T, vect_init, A)
+n=len(vectoors)
 print(len(vect_init)) #longueur initiale
 print(n)
 
-print(vectors)
+print(vectoors)
 #print(vect_init)
 #create_matrix(*vectors)
 
 
 
 #on itère
-res=iteration(*vectors, ite= 0, lambfin = [1 for i in range(n)], indice=[1 for i in range(n)])
+res=iteration(*vectoors, ite= 0, lambfin = [1 for i in range(n)], indice=[1 for i in range(n)])
 print(res)
 
 #test :
@@ -48,18 +48,36 @@ def test(vectors, liste_coeff) :
     somme1=0
     somme2=0
     for i in range(n) :
-        somme1+=np.multiply((1/n),vectors[i])
+        v = np.array(vectors[i], dtype=np.float64)
+        somme1+=v*(1/n)
 
-        somme2+=np.multiply(liste_coeff[i],vectors[i])
+        somme2+=v*liste_coeff[i]
     for j in range(len(vectors[0])) :
         if abs(somme1[j]-somme2[j] )>10**(-2):
             bool=False
     return bool, (somme1-somme2)
 
+print(sum(res))
+print(test(vectoors, res))
 
-print(test(vectors, res))
+"""def reconstruction_noyau(noyau, Xj, A, coeff,x ) :
+    #Reconstruit les deux estimateurs et les trace pour les comparer
+    x = np.linspace(min(Xj[0]), max(Xj[0]), 1000)
+    y=0
+    inter=noyau(x)
+    for w in A :
+        index = int(w / (x[1] - x[0])) #on trouve l'indice le plus proche
+        fft=inter[index]
+        somme=0
+        for i in range(n):
+            
+        y += np.fft.fft()/(4**d)*
 
-def reconstruction_noyau(noyau, Xj, A, coeff,x ) :
-    """Reconstruit les deux estimateurs et les trace pour les comparer"""
-    X=np.linspace(-n,n,4*n)
-    Y=
+    # Affiche le graphique de la densité de probabilité
+    plt.plot(x, y)
+    plt.xlabel('Valeur')
+    plt.ylabel('Densité de probabilité')
+    plt.title('Estimation de densité de probabilité')
+    plt.hist(data, density=True)
+    plt.show()
+"""
