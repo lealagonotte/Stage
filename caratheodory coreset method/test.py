@@ -28,19 +28,15 @@ vect_init=np.random.multivariate_normal(np.array([0, 0]), np.array([[1, 0.5], [0
 
 #on construit les vj
 vectoors=generer_vecteurs(T, vect_init, A)
-n=len(vectoors)
-print(len(vect_init)) #longueur initiale
-print(n)
 
-print(vectoors)
-#print(vect_init)
-#create_matrix(*vectors)
+print("M est de taille", len(create_matrix(*vectoors)[0]))
 
 
 
 #on itère
-res=iteration(*vectoors, ite= 0, lambfin = [1 for i in range(n)], indice=[1 for i in range(n)])
+res=iteration(*vectoors, ite= 0, lambfin = [1 for i in range(n)], indice=[1 for i in range(n)], lambd_old=[1/n for i in range (n)])
 print(res)
+print(sum(res))
 
 #test :
 def test(vectors, liste_coeff) :
