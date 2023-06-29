@@ -1,6 +1,7 @@
 from program import iteration, generer_vecteurs, create_matrix
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 #Paramètres :
 d=2
 T=2 #choisir T en fonction des résultats qu'on a après
@@ -62,7 +63,9 @@ print(test(vectoors, res))
 
 
 def gaussian_kernel(x, sigma=1):
-    return np.exp(-np.linalg.norm(x) ** 2 / (2 * (sigma ** 2)))
+    return np.exp(-(x[0]**2+ x[1]**2)/ (2 * (sigma ** 2)))
+
+
 
 def reconstruction_noyau(noyau, Xj, A, coeff):
     n = len(Xj)
@@ -70,42 +73,79 @@ def reconstruction_noyau(noyau, Xj, A, coeff):
     Xj = np.array(Xj)
 
     x1 = np.linspace(min(Xj[:, 0]), max(Xj[:, 0]), 100)
-    x2=np.linspace(min(Xj[:, 1]), max(Xj[:, 1]), 100)
-    
+    x2 = np.linspace(min(Xj[:, 1]), max(Xj[:, 1]), 100)
+
     X, Y = np.meshgrid(x1, x2)
     pos = np.dstack((X, Y))
-    print(pos)
-    y = np.zeros_like(pos)
-    inter=np.array([])
-    for elmt in pos :
-        inter=np.append(inter, noyau(elmt))
-    
+    y = np.zeros_like(X, dtype=np.complex128)
+    res1 = np.zeros_like(X, dtype=np.complex128)
+    res2 = np.zeros_like(X, dtype=np.complex128)
 
-    fft = np.fft.fft(inter)
+    for elmt in pos:
+        inter = np.array([noyau(e) for e in elmt], dtype=np.complex128)
 
-    for w in A:
-        index1 = int(w[0] / (x1[1] - x1[0]))
-        index2 = int(w[1] / (x2[1] - x2[0]))  # On trouve l'indice le plus proche
-        
-        pos_w=[index1, index2]
-        fft_w = fft[pos_w]
-        somme = 0
-        for i in range(n):
-            somme += coeff[i] * cmath.exp(1j * np.dot(w, Xj[i]))
-        
-        y += fft_w / (4 ** d) * somme * cmath.exp(-1j * np.dot(w, pos))
+        fft = np.fft.fft(inter)
+        for e in elmt:
+            for w in A:
+                index1 = int(w[0] / (x1[1] - x1[0]))
+                index2 = int(w[1] / (x2[1] - x2[0]))
+                pos_w = [index1, index2]
+                fft_w = fft[pos_w[0]]
+                somme = 0
+                for i in range(n):
+                    somme += coeff[i] * np.exp(1j * np.dot(w, Xj[i]))
 
-    z = np.zeros_like(x)
-    for i in range(n):
-        z += 1 / n * noyau(Xj[i] - pos)
+                y += fft_w / (4 ** d) * somme * np.exp(-1j * np.dot(w, e))
+
+            z = np.zeros_like(X, dtype=np.complex128)
+            for i in range(n):
+                z += 1 / n * noyau(Xj[i] - e)
+            res1 += y
+            res2 += z
 
     # Affiche le graphique de la densité de probabilité
-    plt.plot(X, Y, np.real(y))
-    plt.plot(X,Y, np.real(z))
-    plt.xlabel('Valeur')
-    plt.ylabel('Densité de probabilité')
+    plt.contourf(X, Y, np.real(res1), cmap='viridis')
+    plt.colorbar()
+    plt.xlabel('Valeur X')
+    plt.ylabel('Valeur Y')
     plt.title('Estimation de densité de probabilité')
-
     plt.show()
 
 reconstruction_noyau(gaussian_kernel, vect_init,A, res )
+
+
+
+def reconstruction_noyau2(noyau, Xj, A, coeff):
+    # Définir les limites de la grille
+    n = len(Xj)
+    d = len(Xj[0])
+    Xj = np.array(Xj)
+
+    x = np.linspace(min(Xj[:, 0]), max(Xj[:, 0]), 100)
+    y = np.linspace(min(Xj[:, 1]), max(Xj[:, 1]), 100)
+    # Générer la grille de points
+    X, Y = np.meshgrid(x, y)
+    pos = np.dstack((X, Y))
+    pos = np.reshape(pos, (-1, 2))  # Flatten pos to a 2-dimensional array
+
+    # Calculer les densités de probabilité pour chaque point de la grille
+    Z = []
+    for e in pos:
+        z = 0
+        for i in range(n):
+            z += (1 / n) * noyau(Xj[i] - e)
+        Z.append(z)
+
+    # Reshape Z back to the shape of X and Y
+    Z = np.reshape(Z, X.shape)
+
+    # Tracer la représentation de la densité de probabilité
+    plt.figure(figsize=(8, 6))
+    plt.pcolormesh(X, Y, Z, shading='auto', cmap='viridis')
+    plt.colorbar(label='Densité de probabilité')
+    plt.xlabel('Variable 1')
+    plt.ylabel('Variable 2')
+    plt.title('Représentation d\'une loi multivariée en dimension 2')
+    plt.show()
+
+reconstruction_noyau2(gaussian_kernel, vect_init,A, res )
