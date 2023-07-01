@@ -149,3 +149,67 @@ def reconstruction_noyau2(noyau, Xj, A, coeff):
     plt.show()
 
 reconstruction_noyau2(gaussian_kernel, vect_init,A, res )
+
+
+
+
+def reconstruction_noyau3(noyau, Xj, A, coeff):
+    # Définir les limites de la grille
+    n = len(Xj)
+    d = len(Xj[0])
+    Xj = np.array(Xj)
+
+    x = np.linspace(min(Xj[:, 0]), max(Xj[:, 0]), 100)
+    y = np.linspace(min(Xj[:, 1]), max(Xj[:, 1]), 50)
+    print(x)
+    # Générer la grille de points
+    X, Y = np.meshgrid(x, y)
+    pos = np.column_stack((X.ravel(), Y.ravel()))  # Flatten X and Y to generate pos
+
+    # Calculer les densités de probabilité pour chaque point de la grille
+    Z = []
+    for e in pos:
+        Z.append(noyau(e))
+
+    inter = np.array(Z, dtype=np.complex128)
+    fft = np.fft.fft(inter)
+    print(fft)
+    res = np.zeros_like(X, dtype=np.complex128)  # Initialize Y with zeros
+
+
+    for i, e in enumerate(pos):
+        for w in A:
+            #print(w)
+            index1 = abs(int((w[0]-x[0]) / (x[1] - x[0])))
+            index2 = abs(int((w[1]-y[0]) / (y[1] - y[0])))
+            pos_w = np.array([index1, index2])  # Construct pos_w as a 1D array
+            #print(pos_w)
+            index = np.where((pos == np.array([x[index1], y[index2]])))[0][0]  # Find index in pos array
+            #print(index)
+            fft_w = fft[index]
+            somme = 0
+            for j in range(n):
+                somme += coeff[j] * np.exp(1j * np.dot(w, Xj[j]))
+
+            res.ravel()[i] += (fft_w / (4 ** d)) * somme * np.exp(-1j * np.dot(w, e))
+
+
+    if len(res.shape) == 1:
+        numRows = 1
+        numCols = res.shape[0]
+    else:
+        numRows, numCols = res.shape
+    # Tracer la représentation de la densité de probabilité
+    plt.figure(figsize=(8, 6))
+    plt.pcolormesh(X, Y,np.abs(res), shading='auto', cmap='viridis')
+
+    plt.colorbar(label='Densité de probabilité')
+    plt.xlabel('Variable 1')
+    plt.ylabel('Variable 2')
+    plt.title('Représentation d\'une loi multivariée en dimension 2')
+    plt.show()
+
+
+
+
+reconstruction_noyau3(gaussian_kernel, vect_init,A, res )
