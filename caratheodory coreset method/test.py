@@ -67,55 +67,12 @@ def gaussian_kernel(x, sigma=1):
 
 
 
-def reconstruction_noyau(noyau, Xj, A, coeff):
-    n = len(Xj)
-    d = len(Xj[0])
-    Xj = np.array(Xj)
-
-    x1 = np.linspace(min(Xj[:, 0]), max(Xj[:, 0]), 100)
-    x2 = np.linspace(min(Xj[:, 1]), max(Xj[:, 1]), 100)
-
-    X, Y = np.meshgrid(x1, x2)
-    pos = np.dstack((X, Y))
-    y = np.zeros_like(X, dtype=np.complex128)
-    res1 = np.zeros_like(X, dtype=np.complex128)
-    res2 = np.zeros_like(X, dtype=np.complex128)
-
-    for elmt in pos:
-        inter = np.array([noyau(e) for e in elmt], dtype=np.complex128)
-
-        fft = np.fft.fft(inter)
-        for e in elmt:
-            for w in A:
-                index1 = int(w[0] / (x1[1] - x1[0]))
-                index2 = int(w[1] / (x2[1] - x2[0]))
-                pos_w = [index1, index2]
-                fft_w = fft[pos_w[0]]
-                somme = 0
-                for i in range(n):
-                    somme += coeff[i] * np.exp(1j * np.dot(w, Xj[i]))
-
-                y += fft_w / (4 ** d) * somme * np.exp(-1j * np.dot(w, e))
-
-            z = np.zeros_like(X, dtype=np.complex128)
-            for i in range(n):
-                z += 1 / n * noyau(Xj[i] - e)
-            res1 += y
-            res2 += z
-
-    # Affiche le graphique de la densité de probabilité
-    plt.contourf(X, Y, np.real(res1), cmap='viridis')
-    plt.colorbar()
-    plt.xlabel('Valeur X')
-    plt.ylabel('Valeur Y')
-    plt.title('Estimation de densité de probabilité')
-    plt.show()
-
-reconstruction_noyau(gaussian_kernel, vect_init,A, res )
 
 
 
-def reconstruction_noyau2(noyau, Xj, A, coeff):
+
+def estimateur(noyau, Xj, A, coeff):
+    """ représent l'estimateur"""
     # Définir les limites de la grille
     n = len(Xj)
     d = len(Xj[0])
@@ -145,7 +102,7 @@ def reconstruction_noyau2(noyau, Xj, A, coeff):
     plt.colorbar(label='Densité de probabilité')
     plt.xlabel('Variable 1')
     plt.ylabel('Variable 2')
-    plt.title('Représentation d\'une loi multivariée en dimension 2')
+    plt.title('Représentation de l estimateur en dimension 2')
     plt.show()
 
 reconstruction_noyau2(gaussian_kernel, vect_init,A, res )
@@ -153,7 +110,8 @@ reconstruction_noyau2(gaussian_kernel, vect_init,A, res )
 
 
 
-def reconstruction_noyau3(noyau, Xj, A, coeff):
+def reconstruire_coreset_estimator_f(noyau, Xj, A, coeff):
+    """reconstruit l'estimateur construit grâce à la méthode de carathéodory en utilisant la transformée de Fourier inverse"""
     # Définir les limites de la grille
     n = len(Xj)
     d = len(Xj[0])
@@ -211,5 +169,45 @@ def reconstruction_noyau3(noyau, Xj, A, coeff):
 
 
 
+def reconstruction_noyau(noyau, Xj, A, coeff):
+    """reconstruit l'estimateur basé sur la méthode de carathéodory"""
+    # Définir les limites de la grille
+    n = len(Xj)
+    d = len(Xj[0])
+    Xj = np.array(Xj)
 
-reconstruction_noyau3(gaussian_kernel, vect_init,A, res )
+    x = np.linspace(min(Xj[:, 0]), max(Xj[:, 0]), 100)
+    y = np.linspace(min(Xj[:, 1]), max(Xj[:, 1]), 100)
+    # Générer la grille de points
+    X, Y = np.meshgrid(x, y)
+    pos = np.dstack((X, Y))
+    pos = np.reshape(pos, (-1, 2))  # Flatten pos to a 2-dimensional array
+
+    # Calculer les densités de probabilité pour chaque point de la grille
+    Z = []
+    for e in pos:
+        z = 0
+        for i in range(n):
+            if coeff[i]!=0 :
+                
+                z += coeff[i] * noyau(Xj[i] - e)
+        Z.append(z)
+
+    # Reshape Z back to the shape of X and Y
+    Z = np.reshape(Z, X.shape)
+
+    # Tracer la représentation de la densité de probabilité
+    plt.figure(figsize=(8, 6))
+    plt.pcolormesh(X, Y, Z, shading='auto', cmap='viridis')
+    plt.colorbar(label='Densité de probabilité')
+    plt.xlabel('Variable 1')
+    plt.ylabel('Variable 2')
+    plt.title('Représentation d\'une loi multivariée en dimension 2')
+    plt.show()
+
+
+reconstruction_noyau(gaussian_kernel, vect_init,A, res )
+
+
+
+
