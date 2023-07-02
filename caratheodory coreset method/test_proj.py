@@ -3,17 +3,17 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 #Paramètres :
-N=100
+N=10
 d=2
 n=100
 import cmath
 
-#construit l'ensemble A
 
 
 
+vect_init = np.random.normal(loc=0, scale=1, size=100)
 # on part d'une loi multinomiale
-vect_init=np.random.multivariate_normal(np.array([0, 0]), np.array([[1, 0.5], [0.5, 1]]), 100)
+#vect_init=np.random.multivariate_normal(np.array([0, 0]), np.array([[1, 0.5], [0.5, 1]]), 100)
 
 #on construit les vj
 vectoors=generer_vecteurs( vect_init)

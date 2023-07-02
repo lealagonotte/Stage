@@ -5,7 +5,7 @@ import scipy.stats as ss
 
 
 d=2
-N=100
+N=10
 
 # Paramètres de la distribution exponentielle
 lambda_1 = 0.5  # Taux de décroissance pour la première dimension
@@ -40,14 +40,12 @@ def generer_vecteurs( vectors):
         for i in range (N):
             base.append(math.sqrt(2)*math.cos(2*math.pi*i*vectors[k]))
             base.append(math.sqrt(2)*math.sin(2*math.pi*i*vectors[k]))
-    base_totale.append(base)
+        base_totale.append(base)
     return base_totale
 
 
 
-"""vect_init=np.random.multivariate_normal(np.array([0, 0]), np.array([[1, 0.5], [0.5, 1]]), 100)
-vectors=generer_vecteurs(T, vect_init)
-n=len(vectors) #longueur initiale"""
+#on a 2N+1 termes dans chaque vecteur
 
 
 def create_matrix(*vectors):
@@ -92,12 +90,15 @@ def find_alpha( vector, lambd):
     Paramètres : 
     
     -vector : vector est un vecteur du noyau calculé grâce à la fonction précédente"""   
-   
-    old=(- lambd[0] / vector[0])
+    if vector[0]!=0 :
+        old=(- lambd[0] / vector[0])
+    else :
+        old=(- lambd[1] / vector[1])
     i=0
     j=0
     while i<len(vector) :
         if vector[i]!=0 :
+            print(i)
             a = (-lambd[i]  /vector[i]) 
         
             if abs(a)<abs(old)  :
@@ -152,11 +153,11 @@ def iteration(*vectors, ite, lambfin, indice, lambd_old) :
             indice[rg]=0
         #print(rg)
         rg+=1
-   
+    
     print(ite)
     #print(lambd)
     #Met à jour le tableau des lambdfin car on voit qu'en itérant les poids finaux seront le produit des lambda_i à chaque itération i
-    if nb>D+1 : #tant que le nb est supérieur à D+1 on peut encore en supprimer par le théorème de Carathéodory  donc on itére      
+    if nb>2*N+1 : #tant que le nb est supérieur à D+1 on peut encore en supprimer par le théorème de Carathéodory  donc on itére      
 
         iteration(*vect, ite=ite, lambfin=lambfin, indice=indice, lambd_old=lambd_new)
     return lambfin
