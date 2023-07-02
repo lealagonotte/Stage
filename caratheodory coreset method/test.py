@@ -69,7 +69,7 @@ def gaussian_kernel(x, sigma=1):
 
 
 
-
+"""
 
 def estimateur(noyau, Xj, A, coeff):
     """ représent l'estimateur"""
@@ -208,6 +208,6 @@ def reconstruction_noyau(noyau, Xj, A, coeff):
 
 reconstruction_noyau(gaussian_kernel, vect_init,A, res )
 
-
+"""
 
 
