@@ -104,7 +104,7 @@ def find_alpha( vector, lambd):
             if abs(a)<abs(old)  :
                 old=a
                 j=i 
-            i+=1
+        i+=1
     
     v=old * vector
     print(len(v))
