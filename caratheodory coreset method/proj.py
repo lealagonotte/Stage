@@ -262,3 +262,59 @@ def iteration(*vectors, ite, lambfin, indice, lambd_old) :
 res=iteration(*generer_vecteurs(vect_init, 0), ite= 0, lambfin = [1 for i in range(n)], indice=[1 for i in range(n)], lambd_old=[1/n for i in range (n)])
 print(res)
 print(sum(res))
+
+def estimateur(Xj):
+    """ représent l'estimateur"""
+    # Définir les limites de la grille
+
+    alpha_est=[]
+    alpha=[]
+
+    for i in range(1,N) :
+        base=generer_vecteurs(Xj,i)
+        print(len(base))
+        coeff=iteration(*base, ite= 0, lambfin = [1 for i in range(n)], indice=[1 for i in range(n)], lambd_old=[1/n for i in range (n)])
+        sum2=0
+        sum=0
+        for j in range(len(base)):
+          sum+=base[j][0]*(1/n)
+          sum2+=base[j][0]*coeff[j]
+        alpha.append(sum)
+        alpha_est.append(sum2)
+
+
+    Xj = np.array(Xj)
+
+    x = np.linspace(0, 1, 1000)
+    y = np.random.uniform(0,1, size=1000)
+    # Générer la grille de points
+
+    # Calculer les densités de probabilité pour chaque point de la grille
+    Z = []
+    Z2=[]
+
+    Y=generer_vecteurs2(x)
+
+    for k in range(len(Y)) :
+      z = 0
+      z2=0
+      for i in range(len(alpha)):
+        z +=  alpha[i]*Y[k][i]
+        z2+=alpha_est[i]*Y[k][i]
+      Z.append(z)
+      Z2.append(z2)
+    # Reshape Z back to the shape of X and Y
+
+
+    # Tracer la représentation de la densité de probabilité
+    plt.figure(figsize=(8, 6))
+    plt.plot(x,Z2, label="caratheodory")
+    plt.plot(x, Z, label="estimation")
+    plt.plot(x,y, label="vrai")
+    plt.xlabel('x')
+    plt.ylabel('estimateur')
+    plt.title('Représentation de l estimateur en dimension  1')
+    plt.legend()
+    plt.show()
+
+estimateur(vect_init )
