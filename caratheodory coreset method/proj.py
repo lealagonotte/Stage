@@ -404,3 +404,71 @@ def iteration(*vectors, ite, lambfin, indice, lambd_old) :
 res=iteration(*generer_vecteurs(vect_init), ite= 0, lambfin = [1 for i in range(n)], indice=[1 for i in range(n)], lambd_old=[1/n for i in range (n)])
 print(res)
 print(sum(res))
+
+
+
+def estimateur(Xj):
+    """ représente l'estimateur"""
+    # on initialise les listes alpha à 0. Pour des raisons pratiques j'ai choisi de les représenter par une liste et non pas par une matrice
+
+    alpha_est=[0 for j in range(N**2)] #celle ou on a réduit le nombre de données
+    alpha=[0 for j in range(N**2)] #alpha total
+
+   #on crée les vecteurs qu'on considère (les (phi_j(x_i))j, i)
+    vecteurs=generer_vecteurs(Xj)
+  #on applique l'algorithme de Carathéodory à nos vecteurs (pour cette partie c 'est vraiment similaire à ce qu'on a fait avec les estimateurs à noyaux)
+    coeff=iteration(*vecteurs, ite= 0, lambfin = [1 for i in range(n)], indice=[1 for i in range(n)], lambd_old=[1/n for i in range (n)])
+    for i in range(N**2) :
+    #on calcule les alpha (alpha_i,j = 1/n * somme(v) et les alpha_i,j = somme(nouveaux coeff * v))
+        sum2=0
+        sum=0
+        for j in range(len(vecteurs)):
+            sum+=vecteurs[j][i]*(1/n)
+            sum2+=vecteurs[j][i]*coeff[j]
+        alpha[i]=sum
+        alpha_est[i]=sum2
+
+
+    Xj = np.array(Xj)
+
+    x = np.linspace(0,1, 100)
+    y = np.linspace(0,1, 100)
+
+    # Générer la grille de points
+    X, Y = np.meshgrid(x, y)
+    pos = np.column_stack((X.ravel(), Y.ravel()))  # Flatten X and Y to generate pos
+  # Calculer les densités de probabilité pour chaque point de la grille
+    Z = []
+    Z2=[]
+    #print(pos)
+    P=generer_vecteurs(pos)
+    print("P=",len(P))
+    print("pos=", (len(pos)), len(pos[0]))
+    #on reconstruit l'estimateur à partir des alpha
+    moy=0
+    for k in range(len(P)) :
+        z = 0
+        z2=0
+        for i in range(len(alpha)):
+          z +=  alpha[i]*P[k][i]
+          z2+=alpha_est[i]*P[k][i]
+        moy+=(z2/len(P))
+        Z.append(z)
+        Z2.append(z2)
+    print("Z=",len(Z))
+
+    print("moyenne de Z2 est", moy)
+    #print("moyenne de Z2 est", sum(Z2)/len(Z2))
+
+    # Tracer la représentation de la densité de probabilité
+    Z = np.reshape(Z, X.shape)
+    plt.pcolormesh(X, Y,Z, shading='auto', cmap='viridis')
+
+    plt.colorbar(label='Densité de probabilité')
+    plt.xlabel('Variable 1')
+    plt.ylabel('Variable 2')
+    plt.title('Représentation d\'une loi multivariée en dimension 2')
+    plt.show()
+
+
+estimateur(vect_init )
