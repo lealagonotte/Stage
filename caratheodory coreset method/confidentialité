@@ -268,3 +268,7 @@ def estimateur(Xj, W):
 
 
 estimateur(vect_init, sample )
+
+
+
+##Méthode 2
