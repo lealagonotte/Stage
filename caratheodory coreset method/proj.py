@@ -292,7 +292,7 @@ def generer_vecteurs(vectors):
 
 
 
-#on a 2N+1 termes dans chaque vecteur
+
 def create_matrix(*vectors):
     """
     Crée et renvoie la matrice M définie dans l'article
