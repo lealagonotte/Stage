@@ -4,10 +4,10 @@ import math
 import matplotlib.pyplot as plt
 #Paramètres :
 d=2
-T=2 #choisir T en fonction des résultats qu'on a après
+T=2 #choisir T en fonction des résultats qu'on a après, voir program.py pour le T optimal
 n=100
 #D=2*(1+4*T/math.pi)**d
-#print(D)
+
 import cmath
 
 #construit l'ensemble A
@@ -19,7 +19,7 @@ for z in range(-int(T*2/3), int(T*2/3)+1):
             #Vérifie la condition sur la norme infinie et la fréquence T
         if np.linalg.norm(vecteur, np.inf) <= T:
             A.append(vecteur)
-#print(A)
+
 
 D=2*len(A)
 
@@ -41,6 +41,7 @@ print(sum(res))
 
 #test :
 def test(vectors, liste_coeff) :
+    """permet de voir si les deux sommes sont égales, teste le programme itération"""
     bool=True
     somme1=0
     somme2=0
@@ -60,7 +61,7 @@ print(test(vectoors, res))
 
 
 
-
+#On reconstruit l'estimateur avec le noyau gaussien
 
 def gaussian_kernel(x, sigma=1):
     return np.exp(-(x[0]**2+ x[1]**2)/ (2 * (sigma ** 2)))
@@ -69,10 +70,10 @@ def gaussian_kernel(x, sigma=1):
 
 
 
-"""
+
 
 def estimateur(noyau, Xj, A, coeff):
-    """ représent l'estimateur"""
+    """ représente l'estimateur"""
     # Définir les limites de la grille
     n = len(Xj)
     d = len(Xj[0])
@@ -111,7 +112,8 @@ reconstruction_noyau2(gaussian_kernel, vect_init,A, res )
 
 
 def reconstruire_coreset_estimator_f(noyau, Xj, A, coeff):
-    """reconstruit l'estimateur construit grâce à la méthode de carathéodory en utilisant la transformée de Fourier inverse"""
+    """reconstruit l'estimateur construit grâce à la méthode de carathéodory en utilisant la transformée de Fourier inverse, ce programme ne marche pas, le problème vient de np.fft
+    Plutot faire la transformée à la main"""
     # Définir les limites de la grille
     n = len(Xj)
     d = len(Xj[0])
@@ -208,6 +210,6 @@ def reconstruction_noyau(noyau, Xj, A, coeff):
 
 reconstruction_noyau(gaussian_kernel, vect_init,A, res )
 
-"""
+
 
 
