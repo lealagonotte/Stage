@@ -776,6 +776,7 @@ def estimateur(Xj, W):
         sum=0
         for j in range(len(vecteurs)):
             sum+=vecteurs[j][i]*(1/n)
+
             sum2+=vecteurs[j][i]*coeff[j]
         alpha[i]=sum
         alpha_est[i]=sum2
@@ -854,7 +855,8 @@ def taille_coreset(vecteurs) :
             for j in range(len(vecteurs)):
 
                 sum1+=vecteurs[j][i]*(1/n)
-                sum2+=vecteurs[j][i]/(sum(coeff)) #on considère l'estimateur à poids uniforme
+                if coeff[i]!=0 :
+                    sum2+=vecteurs[j][i]/(sum(coeff)) #on considère l'estimateur à poids uniforme
             alpha[i]=sum1
             alpha_est[i]=sum2
 
