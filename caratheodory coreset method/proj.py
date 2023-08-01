@@ -47,7 +47,7 @@ def generer_vecteurs2(vectors):
           base.append(math.sqrt(2)*math.sin(2*math.pi*(i//2)*vectors[k]))
       base_totale.append(base)
     return base_totale
-#on a 2N+1 termes dans chaque vecteur
+#le "squelette" du programme est assez proche de la version estimateur à noyau"
 def create_matrix(*vectors):
     """
     Crée et renvoie la matrice M définie dans l'article
@@ -162,7 +162,7 @@ print(res)
 print(sum(res))
 
 def estimateur(Xj):
-    """ représent l'estimateur"""
+    """ reconstruit l'estimateur par projection"""
     # Définir les limites de la grille
 
     alpha_est=[]
@@ -219,6 +219,7 @@ estimateur(vect_init )
 
 
 def test(vectors, liste_coeff) :
+    """teste si les deux sommes qui doivent etre égales le sont vraiment. Les deux sommes sont """
     bool=True
     somme1=0
     somme2=0
