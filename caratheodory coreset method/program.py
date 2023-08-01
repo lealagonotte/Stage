@@ -3,9 +3,11 @@ import numpy as np
 import cmath
 import scipy.stats as ss
 
+#La méthode de Carathéodory pour les estimateurs à noyau
 
-d=2
-T=2 #choisir T en fonction des résultats qu'on a après
+#Paramètres
+d=2 #dimension
+T=2 #limite de la fenêtre
 n=100
 #D=int(2*(1+4*T/math.pi)**d)
 
