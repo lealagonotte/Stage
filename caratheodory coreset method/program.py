@@ -9,8 +9,12 @@ import scipy.stats as ss
 d=2 #dimension
 T=2 #limite de la fenêtre
 n=100
-#D=int(2*(1+4*T/math.pi)**d)
+#T=n**(1/(2+d)*math.log(n) #idéalement, pour avoir la meilleure estimation, cf la théorie
 
+#D=int(2*(1+4*T/math.pi)**d) #majoration de a
+
+
+#on construit A
 A= []
     #Parcours l'ensemble des coordonnées possibles pour vérifier la condition sur la norme
 for z in range(-int(T*2/3), int(T*2/3)+1):
@@ -21,10 +25,10 @@ for z in range(-int(T*2/3), int(T*2/3)+1):
             A.append(vecteur)
 #print(A)
 
-D=2*len(A)
+D=2*len(A) #Vrai A
 
 
-
+#Des exemples de lois pour teste
 
 # Paramètres de la distribution exponentielle
 lambda_1 = 0.5  # Taux de décroissance pour la première dimension
@@ -48,7 +52,7 @@ print(data)
 
 
 
-
+#début des fonctions
 def generer_vecteurs(T, vectors, A):
     """Crée et renvoie l'ensemble des points qu'on considère (de la forme (e^(i(X_j,w)), w in A)
     vectors est l'ensemble des X_j donc une liste de liste"""
@@ -182,6 +186,6 @@ def iteration(*vectors, ite, lambfin, indice, lambd_old) :
     if nb>D+1 : #tant que le nb est supérieur à D+1 on peut encore en supprimer par le théorème de Carathéodory  donc on itére      
 
         iteration(*vect, ite=ite, lambfin=lambfin, indice=indice, lambd_old=lambd_new)
-    return lambfin
+    return lambfin #renvoie les poids associés au coreset
 
 
