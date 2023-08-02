@@ -25,9 +25,9 @@ def generer_vecteurs3(vectors):
     base_final=[]
     for k in range(len(vectors)) :
       vect=[]
-      i=0
+      i=1
       while i<=N :
-        j=0
+        j=1
         while j <=N:
             if vectors[k][0]<=(i/N) and vectors[k][0]>((i-1)/N) and vectors[k][1]<=(j/N) and vectors[k][1]>((j-1)/N) :
                 vect.append(N)
