@@ -5,7 +5,10 @@ import scipy.stats as ss
 import math
 import matplotlib.pyplot as plt
 import cmath
-
+#Dans ce programme, on utilise la méthode de l'article appliquée aux estimateurs par projection
+#On utilisera soit la base trigo soit la base de HAar
+#il y a sans doute un problème dans l'ordre dans la reconstruction de l'estimateur (programme : estimateur
+#il aurait sans doute été plus simple d'utiliser une matrice pour stocler les N^2 alpha plutot qu'un tableau comme je l'ai fait
 #Paramètres :
 N=100
 d=1
