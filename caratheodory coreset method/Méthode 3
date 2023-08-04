@@ -1,0 +1,165 @@
+    #EN LOCAL
+    #Méthode 3
+    
+    #Confidentialité puis coreset
+    
+    
+    import math
+    import numpy as np
+    import cmath
+    import scipy.stats as ss
+    import math
+    import matplotlib.pyplot as plt
+    import cmath
+    
+    
+    
+    #Paramètres :
+    N=10
+    d=2
+    n=300
+    x = np.random.uniform(0, 1, n)
+    y = np.random.uniform(0, 1, n)
+    
+    # Regrouper les coordonnées x et y dans un tableau numpy de dimension 2
+    vect_init = np.column_stack((x, y))
+    
+    
+    
+    alpha=1
+    sigma=2*N**(d/2)/(alpha*n)
+    def anonymise_local(vectors) :
+        """on construit les Zi=(phi_j(X_i)+sigma*Wij)_j"""
+        Wk=np.random.laplace(0, 1, N**2*n)
+        vect=[]
+        i=1
+        k=0
+        while i<N+1 :
+            j=1
+            while j <N+1:
+                if vectors[0]<=(i/N) and vectors[0]>((i-1)/N) and vectors[1]<=(j/N) and vectors[1]>((j-1)/N) :
+                    vect.append(N+sigma*Wk[k])
+                else :
+                    vect.append(0+sigma*Wk[k])
+                k+=1
+                j+=1
+            i+=1
+        return vect
+    
+    
+    vecteurs=[]
+    for k in range (len(vect_init)) :
+        vecteurs.append(anonymise_local(vect_init[k]))
+    
+    def iteration(*vectors, ite, lambfin, indice, lambd_old) :
+    """ Itère les deux étapes jusqu'à ce qu'on ait plus que D+1 vecteurs
+    Paramètrees :
+    -iter : indique à quelle itération on est
+    -lambdfin -> fait le produit des lambda i au fur et à mesure, ce sont ces coefficients que l'on cherche à avoir
+    -indice : tableau de 0 ou de 1. Si indice[j]=0 alors on a annulé le coeff devant la composante j sinon elle est encore là"""
+    M=create_matrix(*vectors) #on crée la matrice
+
+    nb=len(vectors) #nb de vecteurs qu'il nous reste
+    ite+=1 # pour savoir combien d'itération on a déjà fait
+
+    #Trouve le vecteur du noyau non nul de M
+    v=vecteur_propre(M)
+
+    #Donne lambda_j et la composante qu'on annule
+    (lambd,j)=find_alpha(v, lambd_old)
+
+    vect = []
+    lambd_new=[]
+    for i in range(len(vectors)):
+        v = np.array(vectors[i], dtype=np.float64)
+
+        if i != j:  # Exclude the element at index j
+            vect.append(v)
+            lambd_new.append(lambd[i])
+    # Enlève la composante j car c'est celle qu'on a annulé, on réduit ainsi le nb de vecteurs à l'étape suivante
+    print(indice)
+    lambd_new=np.array(lambd_new, dtype=np.float64)
+    rg=0
+    for k in range(len(lambd)) :
+        if indice[rg]==0 :
+            while indice[rg]== 0  :
+                rg+=1
+        lambfin[rg]=lambd[k]
+        if j==k :
+            lambfin[rg]=0
+            indice[rg]=0
+        #print(rg)
+        rg+=1
+
+
+    #Met à jour le tableau des lambdfin car on voit qu'en itérant les poids finaux seront le produit des lambda_i à chaque itération i
+    if nb>N**2+1 : #tant que le nb est supérieur à D+1 on peut encore en supprimer par le théorème de Carathéodory  donc on itére
+        iteration(*vect, ite=ite, lambfin=lambfin, indice=indice, lambd_old=lambd_new)
+    return lambfin
+
+
+
+
+def estimateur_loc(Xj):
+    """ représente l'estimateur"""
+    # on initialise les listes alpha à 0. Pour des raisons pratiques j'ai choisi de les représenter par une liste et non pas par une matrice
+
+    alpha_est=[0 for j in range(N**2)] #celle ou on a réduit le nombre de données
+    alpha=[0 for j in range(N**2)] #alpha total
+
+   #on crée les vecteurs qu'on considère (les (phi_j(x_i))j, i)
+
+
+  #on applique l'algorithme de Carathéodory à nos vecteurs (pour cette partie c 'est vraiment similaire à ce qu'on a fait avec les estimateurs à noyaux)
+    coeff=iteration(*vecteurs, ite= 0, lambfin = [1 for i in range(n)], indice=[1 for i in range(n)], lambd_old=[1/n for i in range (n)])
+    for i in range(N**2) :
+    #on calcule les alpha (alpha_i,j = 1/n * somme(v) et les alpha_i,j = somme(nouveaux coeff * v))
+        sum2=0
+        sum=0
+        for j in range(len(vecteurs)):
+            sum+=vecteurs[j][i]*(1/n)
+            sum2+=vecteurs[j][i]*coeff[j]
+        alpha[i]=sum
+        alpha_est[i]=sum2
+
+
+    Xj = np.array(Xj)
+
+    x = np.linspace(0,1, 100)
+    y = np.linspace(0,1, 100)
+
+    # Générer la grille de points
+    X, Y = np.meshgrid(x, y)
+    pos = np.column_stack((X.ravel(), Y.ravel()))  # Flatten X and Y to generate pos
+  # Calculer les densités de probabilité pour chaque point de la grille
+    Z = []
+    Z2=[]
+
+    P=generer_vecteurs2(pos)
+
+    #on reconstruit l'estimateur à partir des alpha
+    moy=0
+    for k in range(len(P)) :
+        z = 0
+        z2=0
+        for i in range(len(alpha)):
+          z +=  alpha[i]*P[k][i]
+          z2+=alpha_est[i]*P[k][i]
+        moy+=(z2/len(P))
+        Z.append(z)
+        Z2.append(z2)
+    print("Z=",len(Z))
+
+    print("moyenne de Z2 est", moy)
+    #print("moyenne de Z2 est", sum(Z2)/len(Z2))
+
+    # Tracer la représentation de la densité de probabilité
+    Z = np.reshape(Z2, X.shape)
+    plt.pcolormesh(X, Y,Z, shading='auto', cmap='viridis')
+
+    plt.colorbar(label='Densité de probabilité')
+    plt.xlabel('Variable 1')
+    plt.ylabel('Variable 2')
+    plt.title('Représentation d\'une loi multivariée en dimension 2')
+    plt.show()
+estimateur_loc(vecteurs)
