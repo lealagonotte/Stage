@@ -295,7 +295,8 @@ def anonymise(vecteurs) :
         for j in range(len(vecteurs)):
 
             sum1+=vecteurs[j][i]*(1/n)
-            sum2+=vecteurs[j][i]/(sum(coeff)) #on considère l'estimateur à poids uniforme
+            if coeff[j]!=0 :
+                sum2+=vecteurs[j][i]/(sum(coeff)) #on considère l'estimateur à poids uniforme
         alpha[i]=sum1
         alpha_est[i]=sum2
 
