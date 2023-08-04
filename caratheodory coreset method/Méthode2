@@ -85,7 +85,7 @@ Crée et renvoie l'ensemble des points qu'on considère (de la forme (phi_j),j i
 
 #Méthode 2 : globale, on confidentialise puis coreset
 alpha =1
-sigma=2*N/alpha
+sigma=2*N/(alpha*n)
 def anonymise(data, W) :
     """on confidentiale l'échantille initial en rajoutant du bruit
     Paramètres :
