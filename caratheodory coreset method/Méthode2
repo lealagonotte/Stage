@@ -1,0 +1,231 @@
+###Méthode 2 : globale, on confidentialise puis coreset
+
+import math
+import numpy as np
+import cmath
+import scipy.stats as ss
+import math
+import matplotlib.pyplot as plt
+import cmath
+
+
+
+#Paramètres :
+N=10
+d=2
+n=300
+x = np.random.uniform(0, 1, n)
+y = np.random.uniform(0, 1, n)
+
+# Regrouper les coordonnées x et y dans un tableau numpy de dimension 2
+vect_init = np.column_stack((x, y))
+print(vect_init)
+
+
+
+
+
+def generer_vecteurs(vectors):
+    """BASE TRIGO
+Crée et renvoie l'ensemble des points qu'on considère (de la forme (phi_j),j in [1, N] i in [1, n])
+    vectors est l'ensemble des X_j donc une liste de liste pour la coordonnée c sachant qu'on est en dimension 2 donc i vaut soit 1 soit 0"""
+    base_final=[]
+    for k in range(len(vectors)) :
+      vect=[]
+      for i in range(1,N+1) :
+        for j in range(1,N+1):
+            if i==1 and j==1:
+              vect.append(1)
+            elif i==1 and j%2==0 :
+              vect.append(math.sqrt(2)*math.sin(2*math.pi*(j//2)*vectors[k][1]))
+            elif i==1 and j%2==1 :
+              vect.append(math.sqrt(2)*math.cos(2*math.pi*(j//2)*vectors[k][1]))
+            elif j==1 and i%2==0 :
+              vect.append(math.sqrt(2)*math.sin(2*math.pi*(i//2)*vectors[k][0]))
+            elif j==1 and i%2==1 :
+              vect.append(math.sqrt(2)*math.cos(2*math.pi*(i//2)*vectors[k][0]))
+            elif i%2==0 and j%2==0 :
+              vect.append(2*math.sin(2*math.pi*(i//2)*vectors[k][0])*math.sin(2*math.pi*(j//2)*vectors[k][1]))
+            elif i%2==0 and j%2==1 :
+              vect.append(2*math.sin(2*math.pi*(i//2)*vectors[k][0])*math.cos(2*math.pi*(j//2)*vectors[k][1]))
+            elif i%2==1 and j%2==0 :
+              vect.append(2*math.sin(2*math.pi*(j//2)*vectors[k][1])*math.cos(2*math.pi*(i//2)*vectors[k][0]))
+            elif i%2==1 and j%2==1 :
+              vect.append(2*math.cos(2*math.pi*(j//2)*vectors[k][0])*math.cos(2*math.pi*(i//2)*vectors[k][1]))
+      base_final.append(vect)
+      #pour chaque X_i on crée le vecteur associé avec tous les phi_j
+    return base_final
+
+
+
+
+def generer_vecteurs2(vectors):
+    """BASE DE HAAR
+Crée et renvoie l'ensemble des points qu'on considère (de la forme (phi_j),j in [1, N] i in [1, n])
+    vectors est l'ensemble des X_j donc une liste de liste pour la coordonnée c sachant qu'on est en dimension 2 donc i vaut soit 1 soit 0"""
+    base_final=[]
+    for k in range(len(vectors)) :
+      vect=[]
+      i=1
+      while i<N+1 :
+        j=1
+        while j <N+1:
+            if vectors[k][0]<=(i/N) and vectors[k][0]>((i-1)/N) and vectors[k][1]<=(j/N) and vectors[k][1]>((j-1)/N) :
+              vect.append(N)
+            else :
+                vect.append(0)
+            j+=1
+        i+=1
+
+      base_final.append(vect)
+      #pour chaque X_i on crée le vecteur associé avec tous les phi_j
+    return base_final
+
+
+
+#Méthode 2 : globale, on confidentialise puis coreset
+alpha =1
+sigma=2*N/alpha
+def anonymise(data, W) :
+    """on confidentiale l'échantille initial en rajoutant du bruit
+    Paramètres :
+    data : échantillon de données initiales
+    sigma : variance, paramètre devant les W_ij
+    W : suit une loi de Laplace, on les somme aux données pour rajouter du bruit
+    """
+    init=generer_vecteurs(data)
+
+    vect_anon=[[0 for i in range(len(init[0]))]for j in range(len(init))]
+    
+    for i in range(len(init)) :
+      for j in range(len(init[0])) :
+          vect_anon[i][j]=init[i][j]+sigma*W[i][j]
+    return vect_anon
+
+
+def iteration(*vectors, ite, lambfin, indice, lambd_old) :
+    """ Itère les deux étapes jusqu'à ce qu'on ait plus que D+1 vecteurs
+    Paramètrees :
+    -iter : indique à quelle itération on est
+    -lambdfin -> fait le produit des lambda i au fur et à mesure, ce sont ces coefficients que l'on cherche à avoir
+    -indice : tableau de 0 ou de 1. Si indice[j]=0 alors on a annulé le coeff devant la composante j sinon elle est encore là"""
+    M=create_matrix(*vectors) #on crée la matrice
+
+    nb=len(vectors) #nb de vecteurs qu'il nous reste
+    ite+=1 # pour savoir combien d'itération on a déjà fait
+
+    #Trouve le vecteur du noyau non nul de M
+    v=vecteur_propre(M)
+
+    #Donne lambda_j et la composante qu'on annule
+    (lambd,j)=find_alpha(v, lambd_old)
+
+    vect = []
+    lambd_new=[]
+    for i in range(len(vectors)):
+        v = np.array(vectors[i], dtype=np.float64)
+
+        if i != j:  # Exclude the element at index j
+            vect.append(v)
+            lambd_new.append(lambd[i])
+    # Enlève la composante j car c'est celle qu'on a annulé, on réduit ainsi le nb de vecteurs à l'étape suivante
+    
+    lambd_new=np.array(lambd_new, dtype=np.float64)
+    rg=0
+    for k in range(len(lambd)) :
+        if indice[rg]==0 :
+            while indice[rg]== 0  :
+                rg+=1
+        lambfin[rg]=lambd[k]
+        if j==k :
+            lambfin[rg]=0
+            indice[rg]=0
+        
+        rg+=1
+    
+    
+    #Met à jour le tableau des lambdfin car on voit qu'en itérant les poids finaux seront le produit des lambda_i à chaque itération i
+    if nb>N**2+20 : #tant que le nb est supérieur à D+1 on peut encore en supprimer par le théorème de Carathéodory  donc on itére
+        iteration(*vect, ite=ite, lambfin=lambfin, indice=indice, lambd_old=lambd_new)
+    return lambfin
+
+
+
+
+def estimateur(Xj):
+    """ représente l'estimateur.
+     on confidentiale l'échantille initial en rajoutant du bruit puis on fait le coreset et enfin on trace l'estimateur
+    Paramètres :
+    Xj : échantillon de données initiales
+    sigma : variance, paramètre devant les W_ij
+    W : suit une loi de Laplace, on les somme aux données pour rajouter du bruit
+    """
+    # on initialise les listes alpha à 0. Pour des raisons pratiques j'ai choisi de les représenter par une liste et non pas par une matrice
+    W=np.random.laplace(0,1,N**2)
+    alpha_est=[0 for j in range(N**2)] #celle ou on a réduit le nombre de données
+    alpha=[0 for j in range(N**2)] #alpha total
+
+   #on crée les vecteurs qu'on considère (les (phi_j(x_i))j, i)
+
+    
+    vecteurs=generer_vecteurs2(Xj)
+
+    for i in range(len(vecteurs)) :
+        for j in range(len(vecteurs[0])) :
+            vecteurs[i][j]+=sigma*W[j]
+
+  #on applique l'algorithme de Carathéodory à nos vecteurs (pour cette partie c 'est vraiment similaire à ce qu'on a fait avec les estimateurs à noyaux)
+    coeff=iteration(*vecteurs, ite= 0, lambfin = [1 for i in range(n)], indice=[1 for i in range(n)], lambd_old=[1/n for i in range (n)])
+    for i in range(N**2) :
+    #on calcule les alpha (alpha_i,j = 1/n * somme(v) et les alpha_i,j = somme(nouveaux coeff * v))
+        sum2=0
+        sum=0
+        for j in range(len(vecteurs)):
+            sum+=vecteurs[j][i]*(1/n)
+            sum2+=vecteurs[j][i]*coeff[j]
+        alpha[i]=sum
+        alpha_est[i]=sum2
+
+
+
+    x = np.linspace(0,1, 100)
+    y = np.linspace(0,1, 100)
+
+    # Générer la grille de points
+    X, Y = np.meshgrid(x, y)
+    pos = np.column_stack((X.ravel(), Y.ravel()))  # Flatten X and Y to generate pos
+  # Calculer les densités de probabilité pour chaque point de la grille
+    Z = []
+    Z2=[]
+   
+    P=generer_vecteurs2(pos)
+   
+    #on reconstruit l'estimateur à partir des alpha
+    moy=0
+    for k in range(len(P)) :
+        z = 0
+        z2=0
+        for i in range(len(alpha)):
+          z +=  alpha[i]*P[k][i]
+          z2+=alpha_est[i]*P[k][i]
+          moy+=(z2/len(P))
+        Z.append(z)
+        Z2.append(z2)
+   
+
+    
+    
+
+    # Tracer la représentation de la densité de probabilité
+    Z = np.reshape(Z2, X.shape)
+    plt.pcolormesh(X, Y,Z, shading='auto', cmap='viridis')
+
+    plt.colorbar(label='Densité de probabilité')
+    plt.xlabel('Variable 1')
+    plt.ylabel('Variable 2')
+    plt.title('Représentation d\'une loi multivariée en dimension 2')
+    plt.show()
+
+
+
+estimateur(vect_init)
