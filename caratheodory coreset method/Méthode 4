@@ -11,15 +11,55 @@ import cmath
 
 
 
-    #Paramètres :
+#Paramètres :
 N=10
 d=2
 n=300
 x = np.random.uniform(0, 1, n)
 y = np.random.uniform(0, 1, n)
 
-    # Regrouper les coordonnées x et y dans un tableau numpy de dimension 2
+# Regrouper les coordonnées x et y dans un tableau numpy de dimension 2
 vect_init = np.column_stack((x, y))
+
+
+
+
+
+
+
+def generer_vecteurs(vectors):
+    """BASE TRIGO
+Crée et renvoie l'ensemble des points qu'on considère (de la forme (phi_j),j in [1, N] i in [1, n])
+    vectors est l'ensemble des X_j donc une liste de liste pour la coordonnée c sachant qu'on est en dimension 2 donc i vaut soit 1 soit 0"""
+    base_final=[]
+    for k in range(len(vectors)) :
+      vect=[]
+      for i in range(1,N+1) :
+        for j in range(1,N+1):
+            if i==1 and j==1:
+              vect.append(1)
+            elif i==1 and j%2==0 :
+              vect.append(math.sqrt(2)*math.sin(2*math.pi*(j//2)*vectors[k][1]))
+            elif i==1 and j%2==1 :
+              vect.append(math.sqrt(2)*math.cos(2*math.pi*(j//2)*vectors[k][1]))
+            elif j==1 and i%2==0 :
+              vect.append(math.sqrt(2)*math.sin(2*math.pi*(i//2)*vectors[k][0]))
+            elif j==1 and i%2==1 :
+              vect.append(math.sqrt(2)*math.cos(2*math.pi*(i//2)*vectors[k][0]))
+            elif i%2==0 and j%2==0 :
+              vect.append(2*math.sin(2*math.pi*(i//2)*vectors[k][0])*math.sin(2*math.pi*(j//2)*vectors[k][1]))
+            elif i%2==0 and j%2==1 :
+              vect.append(2*math.sin(2*math.pi*(i//2)*vectors[k][0])*math.cos(2*math.pi*(j//2)*vectors[k][1]))
+            elif i%2==1 and j%2==0 :
+              vect.append(2*math.sin(2*math.pi*(j//2)*vectors[k][1])*math.cos(2*math.pi*(i//2)*vectors[k][0]))
+            elif i%2==1 and j%2==1 :
+              vect.append(2*math.cos(2*math.pi*(j//2)*vectors[k][0])*math.cos(2*math.pi*(i//2)*vectors[k][1]))
+      base_final.append(vect)
+      #pour chaque X_i on crée le vecteur associé avec tous les phi_j
+    return base_final
+
+
+
 
 def generer_vecteurs2(vectors):
     """BASE DE HAAR
@@ -157,7 +197,7 @@ def iteration(borne, *vectors, ite,lambfin, indice, lambd_old, ) :
 
 
 
-
+import numpy as np
 
 
 
@@ -229,16 +269,19 @@ def taille_coreset(vecteurs) :
             borne+=1
     return "rien"
 
-
-
 (borne, coeff)=taille_coreset(generer_vecteurs2(vect_init))
 print(borne)
 alpha2=1
 #on confidentialise ensuite
 sigma=2*N**(d/2)/(alpha2*borne)
+
+
+alpha2=1
+#on confidentialise ensuite
+sigma=2*N**(d/2)/(alpha2*borne)
 def anonymise_local(vectors) :
     """on construit les Zi=(phi_j(X_i)+sigma*Wij)_j"""
-    Wk=np.random.laplace(0, 1, N**2**n)
+    Wk=np.random.laplace(0, 1, N**2*n)
     vect=[]
     i=1
     k=0
@@ -261,10 +304,9 @@ vecteurs=[]
 
 
 for k in range (len(vect_init)) :
-    if coeff[k]!=0 :
+    
         vecteurs.append(anonymise_local(vect_init[k]))
-
-
+    
     #on trace
 
 
@@ -284,11 +326,12 @@ def estimateur_loc(Xj):
     for i in range(N**2) :
     #on calcule les alpha (alpha_i,j = 1/n * somme(v) et les alpha_i,j = somme(nouveaux coeff * v))
         sum2=0
-        sum=0
+        sum1=0
         for j in range(len(vecteurs)):
-            sum+=vecteurs[j][i]*(1/n)
-            sum2+=vecteurs[j][i]*coeff[j]
-        alpha[i]=sum
+            sum1+=vecteurs[j][i]*(1/n)
+            if coeff[j]!=0 :
+                sum2+=vecteurs[j][i]/sum(coeff)
+        alpha[i]=sum1
         alpha_est[i]=sum2
 
 
